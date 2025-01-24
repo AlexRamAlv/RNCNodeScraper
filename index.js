@@ -56,6 +56,4 @@ app.post("/scrape", async (req, res) => {
 });
 
 const port = parseInt(process.env.PORT) || 10000;
-app.listen(port, () => {
-  console.log(`listening on http://localhost:${port}/`);
-});
+app.listen(port);
