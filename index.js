@@ -18,35 +18,41 @@ app.post("/scrape", async (req, res) => {
   }
 
   try {
-    const browser = await puppeteer.launch(/*{ headless: true }*/);
-    const page = await browser.newPage();
-    await page.goto(url);
-    await page.type("#ctl00_cphMain_txtRNCCedula", rnc);
-    await page.click("#ctl00_cphMain_btnBuscarPorRNC");
-    await page.waitForSelector("tbody");
-    const data = await page.evaluate(() => {
-      const rows = document.querySelectorAll("tr");
-      const result = [];
-      rows.forEach((row) => {
-        const cells = row.querySelectorAll("td");
-        const rowData = [];
-        debugger;
-        cells.forEach((cell) => {
-          rowData.push(cell.textContent);
+    (async () => {
+        const browser = await puppeteer.launch({
+        executablePath: '/opt/render/RNCNodeScraper/puppeteer/chrome',
+        userDataDir: '/opt/render/RNCNodeScraper/puppeteer'
+          });
+        const browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
+        await page.goto(url);
+        await page.type("#ctl00_cphMain_txtRNCCedula", rnc);
+        await page.click("#ctl00_cphMain_btnBuscarPorRNC");
+        await page.waitForSelector("tbody");
+        const data = await page.evaluate(() => {
+          const rows = document.querySelectorAll("tr");
+          const result = [];
+          rows.forEach((row) => {
+            const cells = row.querySelectorAll("td");
+            const rowData = [];
+            debugger;
+            cells.forEach((cell) => {
+              rowData.push(cell.textContent);
+            });
+            result.push(rowData);
+            result;
+            resultJSON = {};
+            result.forEach((par) => {
+              const clave = par[0];
+              const valor = par[1];
+              resultJSON[clave] = valor;
+            });
+          });
+          return resultJSON;
         });
-        result.push(rowData);
-        result;
-        resultJSON = {};
-        result.forEach((par) => {
-          const clave = par[0];
-          const valor = par[1];
-          resultJSON[clave] = valor;
-        });
-      });
-      return resultJSON;
-    });
-
-    await browser.close();
+    
+        await browser.close();
+    })();
     res.json({
       data,
     });
