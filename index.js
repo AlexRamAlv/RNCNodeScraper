@@ -20,7 +20,6 @@ app.post("/scrape", async (req, res) => {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: '/opt/render/RNCNodeScraper/puppeteer/chrome',
       userDataDir: '/opt/render/RNCNodeScraper/puppeteer'
       });
     const page = await browser.newPage();
