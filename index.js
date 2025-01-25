@@ -21,9 +21,9 @@ app.post("/scrape", async (req, res) => {
         "check number you entered. It must be composed by 9 or 11 numbers",
     });
   }
-
+  
+  const browser = await puppeteer.launch();
   try {
-    const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
     await page.type("#ctl00_cphMain_txtRNCCedula", rnc);
@@ -58,6 +58,7 @@ app.post("/scrape", async (req, res) => {
       data,
     });
   } catch (error) {
+    await browser.close();
     if (error.name === "TimeoutError") {
       res
         .status(400)
