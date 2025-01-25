@@ -23,7 +23,7 @@ app.post("/scrape", async (req, res) => {
   }
 
   try {
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
     await page.type("#ctl00_cphMain_txtRNCCedula", rnc);
