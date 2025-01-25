@@ -15,19 +15,22 @@ app.post("/scrape", async (req, res) => {
 
   if (!rnc) {
     return res.status(400).json({ Error: "RNC is required" });
+  } else if (rnc.length !== 9 && rnc.length !== 11) {
+    return res.status(404).json({
+      message:
+        "check number you entered. It must be composed by 9 or 11 numbers",
+    });
   }
 
   try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      userDataDir: '/opt/render/RNCNodeScraper/puppeteer'
-      });
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     await page.goto(url);
     await page.type("#ctl00_cphMain_txtRNCCedula", rnc);
     await page.click("#ctl00_cphMain_btnBuscarPorRNC");
-    await page.waitForSelector("tbody");
+    await page.waitForSelector("tbody", {
+      timeout: 10000,
+    });
     const data = await page.evaluate(() => {
       const rows = document.querySelectorAll("tr");
       const result = [];
@@ -48,13 +51,20 @@ app.post("/scrape", async (req, res) => {
         });
       });
       return resultJSON;
-    });    
+    });
+
     await browser.close();
     res.json({
       data,
     });
   } catch (error) {
-    console.log(error);
+    if (error.name === "TimeoutError") {
+      res
+        .status(400)
+        .json({ message: "RNC number not found, please check it out" });
+    } else {
+      res.status(500).json({ message: `Se produjo un error: ${error}` });
+    }
   }
 });
 
